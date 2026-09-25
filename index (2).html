@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Horizon Grand Hotel & Suites - Kemewahan Tanpa Batas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        obsidian: '#0f172a',
+                        slateDark: '#1e293b',
+                        gold: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                        },
+                        cream: '#fdfbf7',
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+        }
+        /* Custom Leaflet Map Dark Styling */
+        #hotelMap {
+            z-index: 1;
+        }
+        .leaflet-top, .leaflet-bottom {
+            z-index: 10 !important;
+        }
+        .leaflet-container {
+            background-color: #0f172a !important;
+        }
+        .leaflet-popup-content-wrapper {
+            background: #1e293b !important;
+            color: #f1f5f9 !important;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+        }
+        .leaflet-popup-tip {
+            background: #1e293b !important;
+        }
+    </style>
+</head>
+<body class="bg-obsidian text-slate-100 font-sans antialiased selection:bg-gold-500 selection:text-obsidian">
+
+    <!-- NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-obsidian/90 backdrop-blur-md border-b border-slate-800" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full border border-gold-500/40 flex items-center justify-center bg-gold-500/10 group-hover:border-gold-400 transition">
+                    <i class="fa-solid fa-crown text-gold-400 text-lg"></i>
+                </div>
+                <div>
+                    <span class="font-serif text-xl sm:text-2xl font-bold tracking-wider gold-gradient-text block leading-none">AURA HORIZON</span>
+                    <span class="text-[10px] tracking-[0.25em] text-slate-400 uppercase font-medium">Grand Hotel & Suites</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium tracking-wide">
+                <a href="#beranda" class="hover:text-gold-400 transition py-1 border-b-2 border-transparent hover:border-gold-400">Beranda</a>
+                <a href="#kamar" class="hover:text-gold-400 transition py-1 border-b-2 border-transparent hover:border-gold-400">Kamar & Suite</a>
+                <a href="#fasilitas" class="hover:text-gold-400 transition py-1 border-b-2 border-transparent hover:border-gold-400">Fasilitas</a>
+                <a href="#tentang" class="hover:text-gold-400 transition py-1 border-b-2 border-transparent hover:border-gold-400">Tentang Kami</a>
+                <a href="#ulasan" class="hover:text-gold-400 transition py-1 border-b-2 border-transparent hover:border-gold-400">Ulasan</a>
+            </nav>
+
+            <div class="hidden md:flex items-center gap-4">
+                <a href="#booking" class="gold-gradient-bg text-obsidian font-semibold px-5 py-2.5 rounded-full shadow-lg hover:brightness-110 transition duration-300 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-calendar-check text-xs"></i> Pesan Sekarang
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden text-slate-300 hover:text-gold-400 focus:outline-none p-2" aria-label="Toggle Navigation">
+                <i class="fa-solid fa-bars text-2xl" id="menuIcon"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-slateDark border-b border-slate-800 px-6 py-6 space-y-4">
+            <a href="#beranda" class="mobile-link block text-base font-medium text-slate-200 hover:text-gold-400">Beranda</a>
+            <a href="#kamar" class="mobile-link block text-base font-medium text-slate-200 hover:text-gold-400">Kamar & Suite</a>
+            <a href="#fasilitas" class="mobile-link block text-base font-medium text-slate-200 hover:text-gold-400">Fasilitas</a>
+            <a href="#tentang" class="mobile-link block text-base font-medium text-slate-200 hover:text-gold-400">Tentang Kami</a>
+            <a href="#ulasan" class="mobile-link block text-base font-medium text-slate-200 hover:text-gold-400">Ulasan</a>
+            <a href="#booking" class="mobile-link block text-center gold-gradient-bg text-obsidian font-semibold px-5 py-3 rounded-full mt-4">Pesan Sekarang</a>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="beranda" class="relative min-h-screen pt-20 flex flex-col justify-between items-center overflow-hidden">
+        <!-- Background Overlay & Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=2000" 
+                 alt="Aura Horizon Exterior" 
+                 class="w-full h-full object-cover object-center filter brightness-[0.4] scale-105 transform animate-pulse transition duration-10000" 
+                 style="animation-duration: 20s;"
+                 onerror="this.src='https://placehold.co/1920x1080/0f172a/fbbf24?text=Aura+Horizon+Grand+Hotel'">
+            <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-obsidian/40 to-transparent"></div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="relative z-10 max-w-5xl mx-auto text-center px-4 pt-20 pb-16 flex-1 flex flex-col justify-center items-center">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs sm:text-sm font-medium uppercase tracking-widest mb-6 backdrop-blur-sm">
+                <i class="fa-solid fa-star text-[10px]"></i> Pengalaman Menginap Bintang 5 Plus
+            </span>
+            <h1 class="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+                Kemewahan Tanpa Batas, <br><span class="gold-gradient-text italic font-normal">Kenyamanan Sejati</span>
+            </h1>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl font-light mb-10 leading-relaxed">
+                Nikmati perpaduan sempurna antara arsitektur kontemporer, pemandangan cakrawala yang memukau, dan pelayanan ramah berkelas dunia di jantung kota.
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#tentang" class="gold-gradient-bg text-obsidian font-semibold px-8 py-4 rounded-full shadow-2xl hover:brightness-110 transition flex items-center gap-3">
+                    Jelajahi Hotel <i class="fa-solid fa-arrow-right"></i>
+                </a>
+                <a href="#kamar" class="bg-slate-800/80 hover:bg-slate-700/80 text-white font-medium px-8 py-4 rounded-full border border-slate-700 transition backdrop-blur-sm">
+                    Lihat Kamar & Suite
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TENTANG HOTEL & PETA LOKASI INTERAKTIF -->
+    <section id="tentang" class="py-24 bg-obsidian relative border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Deskripsi Hotel -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div>
+                        <span class="text-gold-400 text-xs font-bold uppercase tracking-widest block mb-2">Tentang Kami</span>
+                        <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white leading-tight">Oasis Kemewahan & Ketenangan Jiwa</h2>
+                        <div class="w-20 h-1 gold-gradient-bg rounded-full mt-4"></div>
+                    </div>
+
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Berdiri secara megah di kawasan prestisius pusat kota, <strong class="text-gold-400">Aura Horizon Grand Hotel & Suites</strong> menghadirkan standar baru dalam industri *hospitality* mewah. Kami menggabungkan kemegahan arsitektur modern, lanskap alam yang tenang, serta sentuhan pelayanan personalisasi terbaik untuk memenuhi setiap kebutuhan Anda.
+                    </p>
+
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Baik Anda merencanakan liburan romatis, perjalanan bisnis VIP, maupun momen istirahat berkualitas bersama keluarga, Aura Horizon dirancang untuk memberikan kenyamanan tanpa kompromi.
+                    </p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-800">
+                        <div class="text-center p-3 rounded-2xl bg-slateDark/50 border border-slate-800">
+                            <span class="font-serif text-2xl sm:text-3xl font-bold text-gold-400 block">150+</span>
+                            <span class="text-[11px] text-slate-400 uppercase tracking-wider">Kamar & Suite</span>
+                        </div>
+                        <div class="text-center p-3 rounded-2xl bg-slateDark/50 border border-slate-800">
+                            <span class="font-serif text-2xl sm:text-3xl font-bold text-gold-400 block">4.9★</span>
+                            <span class="text-[11px] text-slate-400 uppercase tracking-wider">Rating Tamu</span>
+                        </div>
+                        <div class="text-center p-3 rounded-2xl bg-slateDark/50 border border-slate-800 col-span-2 sm:col-span-1">
+                            <span class="font-serif text-2xl sm:text-3xl font-bold text-gold-400 block">24/7</span>
+                            <span class="text-[11px] text-slate-400 uppercase tracking-wider">Layanan Concierge</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peta Lokasi Interaktif -->
+                <div class="lg:col-span-6">
+                    <div class="glass-card p-4 sm:p-6 rounded-3xl border border-gold-500/20 shadow-2xl relative">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-serif text-lg font-bold text-white">Lokasi Strategis</h3>
+                                    <p class="text-xs text-slate-400">Jl. Boulevard Grand Horizon No. 88, Jakarta</p>
+                                </div>
+                            </div>
+                            <a href="https://www.google.com/maps/search/?api=1&query=-6.193125,106.821810" target="_blank" rel="noopener noreferrer" class="text-xs text-gold-400 hover:text-gold-300 font-medium flex items-center gap-1 bg-slate-900/80 px-3 py-1.5 rounded-full border border-slate-700">
+                                Buka di Maps <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+
+                        <div id="hotelMap" class="w-full h-80 rounded-2xl overflow-hidden border border-slate-700/80 shadow-inner relative"></div>
+
+                        <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs text-slate-300">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-plane text-gold-400"></i> Bandara (20 Menit)
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-bag-shopping text-gold-400"></i> Mall Mewah (5 Menit)
+                            </div>
+                            <div class="flex items-center gap-2 col-span-2 sm:col-span-1">
+                                <i class="fa-solid fa-train text-gold-400"></i> Stasiun LRT/MRT (3 Menit)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FASILITAS UTAMA -->
+    <section id="fasilitas" class="py-24 bg-obsidian relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-gold-400 text-xs font-bold uppercase tracking-widest block mb-2">Fasilitas Eksklusif</span>
+                <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white mb-4">Kemewahan Lengkap Untuk Anda</h2>
+                <div class="w-20 h-1 gold-gradient-bg mx-auto rounded-full mb-6"></div>
+                <p class="text-slate-400 text-sm sm:text-base">Dirancang dengan standar hospitality terbaik untuk memastikan setiap momen istirahat Anda menjadi pengalaman tak terlupakan.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Facility Item 1 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=800" 
+                             alt="Lobby Utama" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Lobby+Utama'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-hotel"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Grand Lobby & Lounge</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Suasana penyambutan megah dengan langit-langit tinggi, alunan musik tenang, dan welcome drink khas Aura Horizon.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-regular fa-clock"></i> Layanan 24 Jam Non-Stop
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Item 2 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&q=80&w=800" 
+                             alt="Infinity Pool" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Infinity+Pool'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-water-ladder"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Rooftop Infinity Pool</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Berenang di atas ketinggian dengan panorama cakrawala kota yang spektakuler, dilengkapi dengan pool bar segar.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-solid fa-sun"></i> Pemandangan Sunset Terbaik
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Item 3 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=800" 
+                             alt="Gourmet Food Court" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Food+Court'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-utensils"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Gourmet Food Court & Dining</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Sajian kuliner internasional dan Nusantara kelas atas garapan chef bintang lima dalam ruangan mewah.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-solid fa-wine-glass"></i> Sarapan, Makan Siang & Malam
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Item 4 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&q=80&w=800" 
+                             alt="Parkir Valet" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Parkir+Valet'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-square-parking"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Area Parkir & Valet Service</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Lahan parkir basemen dan terbuka yang sangat luas dengan sistem keamanan CCTV 24 jam dan penanganan valet gratis.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-solid fa-shield-halved"></i> Keamanan Terjamin 24/7
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Item 5 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=800" 
+                             alt="Spa & Wellness" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Spa+Wellness'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-spa"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Aura Spa & Holistic Wellness</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Manjakan tubuh dan pikiran Anda dengan pemijatan tradisional aromaterapi, sauna, dan perawatan wajah.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-solid fa-leaf"></i> Terapis Profesional Sertifikasi
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Facility Item 6 -->
+                <div class="glass-card rounded-2xl overflow-hidden group hover:border-gold-500/50 transition duration-500">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800" 
+                             alt="Fitness Center" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Fitness+Center'">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slateDark via-transparent to-transparent"></div>
+                        <span class="absolute top-4 right-4 bg-obsidian/80 backdrop-blur-md text-gold-400 p-3 rounded-full text-lg">
+                            <i class="fa-solid fa-dumbbell"></i>
+                        </span>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-serif text-xl font-bold text-white mb-2 group-hover:text-gold-400 transition">Modern Fitness Center</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-4">Peralatan kebugaran paling mutakhir untuk menjaga fleksibilitas dan performa fisik Anda selama liburan.</p>
+                        <div class="flex items-center gap-2 text-xs text-gold-400 font-medium">
+                            <i class="fa-solid fa-heart-pulse"></i> Peralatan Gym Lengkap
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TIPE KAMAR & SUITE -->
+    <section id="kamar" class="py-24 bg-slateDark relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-gold-400 text-xs font-bold uppercase tracking-widest block mb-2">Akomodasi Pilihan</span>
+                    <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white">Kamar & Suite Istimewa</h2>
+                </div>
+                <!-- Filter Buttons -->
+                <div class="flex flex-wrap gap-2 mt-6 md:mt-0" id="roomFilterBtns">
+                    <button onclick="filterRooms('all')" class="filter-btn active bg-gold-500 text-obsidian font-semibold px-4 py-2 rounded-full text-sm transition">Semua Kamar</button>
+                    <button onclick="filterRooms('deluxe')" class="filter-btn bg-slate-800 text-slate-300 hover:text-white px-4 py-2 rounded-full text-sm transition border border-slate-700">Deluxe</button>
+                    <button onclick="filterRooms('suite')" class="filter-btn bg-slate-800 text-slate-300 hover:text-white px-4 py-2 rounded-full text-sm transition border border-slate-700">Suite</button>
+                    <button onclick="filterRooms('penthouse')" class="filter-btn bg-slate-800 text-slate-300 hover:text-white px-4 py-2 rounded-full text-sm transition border border-slate-700">VIP Penthouse</button>
+                </div>
+            </div>
+
+            <!-- Room Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8" id="roomGrid">
+                
+                <!-- Room 1 -->
+                <div class="room-card glass-card rounded-3xl overflow-hidden flex flex-col xl:flex-row border border-slate-700/60 hover:border-gold-500/40 transition duration-500" data-category="deluxe">
+                    <div class="xl:w-1/2 relative h-64 xl:h-auto overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&q=80&w=800" 
+                             alt="Superior City View" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Superior+City+View'">
+                        <span class="absolute top-4 left-4 bg-obsidian/80 backdrop-blur-md text-gold-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-gold-500/20">
+                            32 m² / Pemandangan Kota
+                        </span>
+                    </div>
+                    <div class="xl:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-serif text-2xl font-bold text-white">Superior City View</h3>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-6 line-clamp-2">Kamar elegan dengan pemandangan lanskap kota modern, dilengkapi tempat tidur King-size super nyaman.</p>
+                            
+                            <div class="space-y-2 mb-6">
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-wifi text-gold-400 w-4"></i> High-Speed Wi-Fi Gratis
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-tv text-gold-400 w-4"></i> Smart TV 50 inch + Netflix
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-mug-hot text-gold-400 w-4"></i> Pembuat Kopi & Teh Premium
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Mulai dari</span>
+                                <span class="font-serif text-2xl font-bold text-gold-400">Rp 850.000</span>
+                                <span class="text-xs text-slate-400">/malam</span>
+                            </div>
+                            <button onclick="selectRoomForBooking('Superior City View', 850000)" class="gold-gradient-bg text-obsidian font-bold px-5 py-2.5 rounded-full text-sm hover:brightness-110 transition shadow-md">
+                                Pilih Kamar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room 2 -->
+                <div class="room-card glass-card rounded-3xl overflow-hidden flex flex-col xl:flex-row border border-slate-700/60 hover:border-gold-500/40 transition duration-500" data-category="deluxe">
+                    <div class="xl:w-1/2 relative h-64 xl:h-auto overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=800" 
+                             alt="Deluxe Garden Suite" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Deluxe+Garden+Suite'">
+                        <span class="absolute top-4 left-4 bg-obsidian/80 backdrop-blur-md text-gold-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-gold-500/20">
+                            48 m² / Akses Taman
+                        </span>
+                    </div>
+                    <div class="xl:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-serif text-2xl font-bold text-white">Deluxe Garden Suite</h3>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-6 line-clamp-2">Kamar tenang berdesain tropis elegan yang menghadap langsung ke taman asri hotel.</p>
+                            
+                            <div class="space-y-2 mb-6">
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-utensils text-gold-400 w-4"></i> Termasuk Sarapan 2 Orang
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-bath text-gold-400 w-4"></i> Bathtub & Rain Shower
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-couch text-gold-400 w-4"></i> Area Santai Privat
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Mulai dari</span>
+                                <span class="font-serif text-2xl font-bold text-gold-400">Rp 1.450.000</span>
+                                <span class="text-xs text-slate-400">/malam</span>
+                            </div>
+                            <button onclick="selectRoomForBooking('Deluxe Garden Suite', 1450000)" class="gold-gradient-bg text-obsidian font-bold px-5 py-2.5 rounded-full text-sm hover:brightness-110 transition shadow-md">
+                                Pilih Kamar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room 3 -->
+                <div class="room-card glass-card rounded-3xl overflow-hidden flex flex-col xl:flex-row border border-slate-700/60 hover:border-gold-500/40 transition duration-500" data-category="suite">
+                    <div class="xl:w-1/2 relative h-64 xl:h-auto overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=800" 
+                             alt="Executive Ocean Balcony" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Executive+Ocean+Balcony'">
+                        <span class="absolute top-4 left-4 bg-obsidian/80 backdrop-blur-md text-gold-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-gold-500/20">
+                            65 m² / Balkon Privat
+                        </span>
+                    </div>
+                    <div class="xl:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-serif text-2xl font-bold text-white">Executive Ocean Balcony</h3>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-6 line-clamp-2">Suite mewah dengan balkon pribadi luas untuk menikmati momen matahari terbenam dengan pemandangan spektakuler.</p>
+                            
+                            <div class="space-y-2 mb-6">
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-martini-glass text-gold-400 w-4"></i> Akses Executive Lounge
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-hot-tub-person text-gold-400 w-4"></i> Jacuzzi Privat di Balkon
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-shirt text-gold-400 w-4"></i> Gratis Laundry 3 Pakaian/Hari
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Mulai dari</span>
+                                <span class="font-serif text-2xl font-bold text-gold-400">Rp 2.200.000</span>
+                                <span class="text-xs text-slate-400">/malam</span>
+                            </div>
+                            <button onclick="selectRoomForBooking('Executive Ocean Balcony', 2200000)" class="gold-gradient-bg text-obsidian font-bold px-5 py-2.5 rounded-full text-sm hover:brightness-110 transition shadow-md">
+                                Pilih Kamar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room 4 -->
+                <div class="room-card glass-card rounded-3xl overflow-hidden flex flex-col xl:flex-row border border-slate-700/60 hover:border-gold-500/40 transition duration-500" data-category="penthouse">
+                    <div class="xl:w-1/2 relative h-64 xl:h-auto overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&q=80&w=800" 
+                             alt="Presidential Penthouse Suite" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                             onerror="this.src='https://placehold.co/800x600/1e293b/fbbf24?text=Presidential+Penthouse'">
+                        <span class="absolute top-4 left-4 bg-obsidian/80 backdrop-blur-md text-gold-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-gold-500/20">
+                            120 m² / Lantai Teratas VIP
+                        </span>
+                    </div>
+                    <div class="xl:w-1/2 p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-serif text-2xl font-bold text-white">Presidential Penthouse</h3>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-6 line-clamp-2">Puncak kemewahan hotel kami. Suite penthouse eksklusif dengan ruang makan pribadi, pelayan pribadi 24 jam, dan kolam renang privat.</p>
+                            
+                            <div class="space-y-2 mb-6">
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-user-tie text-gold-400 w-4"></i> Layanan Butler Pribadi 24 Jam
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-car text-gold-400 w-4"></i> Gratis Penjemputan Limosin
+                                </div>
+                                <div class="flex items-center gap-2 text-xs text-slate-300">
+                                    <i class="fa-solid fa-wine-bottle text-gold-400 w-4"></i> Complimentary Premium Wine
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Mulai dari</span>
+                                <span class="font-serif text-2xl font-bold text-gold-400">Rp 4.800.000</span>
+                                <span class="text-xs text-slate-400">/malam</span>
+                            </div>
+                            <button onclick="selectRoomForBooking('Presidential Penthouse Suite', 4800000)" class="gold-gradient-bg text-obsidian font-bold px-5 py-2.5 rounded-full text-sm hover:brightness-110 transition shadow-md">
+                                Pilih Kamar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- KALKULATOR & FORM PEMESANAN INTEGRASI -->
+    <section id="booking" class="py-24 bg-obsidian relative">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-gold-400 text-xs font-bold uppercase tracking-widest block mb-2">Reservasi Mudah & Cepat</span>
+                <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white mb-4">Pemesanan Online Instan</h2>
+                <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">Sistem kalkulator otomatis akan menghitung estimasi biaya menginap Anda secara langsung. Lanjutkan konfirmasi melalui WhatsApp atau Gmail.</p>
+            </div>
+
+            <div class="glass-card rounded-3xl p-6 sm:p-10 border border-gold-500/20 shadow-2xl">
+                <form id="bookingCalculatorForm" onsubmit="event.preventDefault();">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        
+                        <!-- Data Pemesan -->
+                        <div class="space-y-4">
+                            <h3 class="font-serif text-lg font-semibold text-gold-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-user-gear"></i> Informasi Tamu
+                            </h3>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                                <input type="text" id="custName" required placeholder="Contoh: Budi Santoso" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Email</label>
+                                <input type="email" id="custEmail" required placeholder="nama@email.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Nomor WhatsApp</label>
+                                <input type="tel" id="custPhone" required placeholder="081234567890" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                            </div>
+                        </div>
+
+                        <!-- Rincian Menginap -->
+                        <div class="space-y-4">
+                            <h3 class="font-serif text-lg font-semibold text-gold-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-hotel"></i> Detail Reservasi
+                            </h3>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Pilih Tipe Kamar</label>
+                                <select id="bookRoomType" onchange="calculateTotal()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                                    <option value="Superior City View" data-price="850000">Superior City View (Rp 850.000/malam)</option>
+                                    <option value="Deluxe Garden Suite" data-price="1450000">Deluxe Garden Suite (Rp 1.450.000/malam)</option>
+                                    <option value="Executive Ocean Balcony" data-price="2200000">Executive Ocean Balcony (Rp 2.200.000/malam)</option>
+                                    <option value="Presidential Penthouse Suite" data-price="4800000">Presidential Penthouse Suite (Rp 4.800.000/malam)</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Check-In</label>
+                                    <input type="date" id="bookCheckIn" onchange="calculateTotal()" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-3 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Check-Out</label>
+                                    <input type="date" id="bookCheckOut" onchange="calculateTotal()" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-3 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Jumlah Tamu</label>
+                                <select id="bookGuests" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-slate-200 text-sm focus:border-gold-500 focus:outline-none transition">
+                                    <option value="1 Orang">1 Dewasa</option>
+                                    <option value="2 Orang" selected>2 Dewasa</option>
+                                    <option value="3 Orang">3 Dewasa / Keluarga</option>
+                                    <option value="4 Orang">4 Dewasa / Keluarga Besar</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Additional Services / Add-ons -->
+                    <div class="mb-8 border-t border-slate-800 pt-6">
+                        <label class="block text-xs font-semibold text-gold-400 uppercase tracking-wider mb-3">Layanan Tambahan (Opsional)</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-700 cursor-pointer hover:border-gold-500/50 transition">
+                                <input type="checkbox" id="addonShuttle" value="350000" onchange="calculateTotal()" class="w-4 h-4 text-gold-500 rounded border-slate-700 focus:ring-gold-500">
+                                <div class="text-xs">
+                                    <span class="block text-slate-200 font-medium">Jemputan Bandara</span>
+                                    <span class="text-slate-400">+Rp 350.000</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-700 cursor-pointer hover:border-gold-500/50 transition">
+                                <input type="checkbox" id="addonBreakfast" value="200000" onchange="calculateTotal()" class="w-4 h-4 text-gold-500 rounded border-slate-700 focus:ring-gold-500">
+                                <div class="text-xs">
+                                    <span class="block text-slate-200 font-medium">Sarapan Premium Buffets</span>
+                                    <span class="text-slate-400">+Rp 200.000 /hari</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-700 cursor-pointer hover:border-gold-500/50 transition">
+                                <input type="checkbox" id="addonSpa" value="500000" onchange="calculateTotal()" class="w-4 h-4 text-gold-500 rounded border-slate-700 focus:ring-gold-500">
+                                <div class="text-xs">
+                                    <span class="block text-slate-200 font-medium">Paket Spa Couple</span>
+                                    <span class="text-slate-400">+Rp 500.000</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Price Calculation Summary Box -->
+                    <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <span class="text-xs text-slate-400 block mb-1">Rincian & Total Estimasi</span>
+                            <div class="text-sm text-slate-300">
+                                Durasi Menginap: <span id="summaryNights" class="font-bold text-gold-400">1</span> Malam
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">Total Biaya Reservasi</span>
+                            <span id="summaryTotalPrice" class="font-serif text-3xl font-bold text-gold-400">Rp 850.000</span>
+                        </div>
+                    </div>
+
+                    <!-- Action Integration Buttons -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button type="button" onclick="sendToWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-3">
+                            <i class="fa-brands fa-whatsapp text-xl"></i> Konfirmasi via WhatsApp
+                        </button>
+                        <button type="button" onclick="sendToGmail()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-bold py-4 px-6 rounded-xl transition shadow-lg flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-envelope text-xl"></i> Konfirmasi via Gmail
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ULASAN TAMU -->
+    <section id="ulasan" class="py-24 bg-slateDark relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-gold-400 text-xs font-bold uppercase tracking-widest block mb-2">Testimoni Otentik</span>
+                <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white mb-4">Pengalaman Pengunjung Kami</h2>
+                <div class="w-20 h-1 gold-gradient-bg mx-auto rounded-full mb-6"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="glass-card p-8 rounded-3xl relative flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-gold-400 mb-4 text-sm gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm italic mb-6 leading-relaxed">
+                            "Pengalaman menginap di Executive Ocean Balcony luar biasa memuaskan. Pemandangan sunset dari balkon sangat privat dan indah. Pelayanannya benar-benar sekelas bintang lima!"
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4 pt-4 border-t border-slate-700/60">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" 
+                             alt="Anisa Rahma" 
+                             class="w-12 h-12 rounded-full object-cover border-2 border-gold-400"
+                             onerror="this.src='https://placehold.co/100x100/1e293b/fbbf24?text=AR'">
+                        <div>
+                            <h4 class="font-bold text-white text-sm">Anisa Rahma</h4>
+                            <span class="text-xs text-slate-400">Tamu Executive Suite</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="glass-card p-8 rounded-3xl relative flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-gold-400 mb-4 text-sm gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm italic mb-6 leading-relaxed">
+                            "Rooftop infinity pool nya memukau! Makanan di Gourmet Food Court sangat kaya rasa. Seluruh staf sangat ramah dan sigap melayani. Pasti akan kembali lagi!"
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4 pt-4 border-t border-slate-700/60">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" 
+                             alt="Hendrik Pratama" 
+                             class="w-12 h-12 rounded-full object-cover border-2 border-gold-400"
+                             onerror="this.src='https://placehold.co/100x100/1e293b/fbbf24?text=HP'">
+                        <div>
+                            <h4 class="font-bold text-white text-sm">Hendrik Pratama</h4>
+                            <span class="text-xs text-slate-400">Business Traveler</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="glass-card p-8 rounded-3xl relative flex flex-col justify-between">
+                    <div>
+                        <div class="flex text-gold-400 mb-4 text-sm gap-1">
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                        <p class="text-slate-300 text-sm italic mb-6 leading-relaxed">
+                            "Kami merayakan anniversary di Presidential Penthouse. Layanan butler-nya istimewa dan suasana kamarnya begitu mewah namun tetap hangat. Sangat direkomendasikan."
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-4 pt-4 border-t border-slate-700/60">
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200" 
+                             alt="Clarissa & Family" 
+                             class="w-12 h-12 rounded-full object-cover border-2 border-gold-400"
+                             onerror="this.src='https://placehold.co/100x100/1e293b/fbbf24?text=CF'">
+                        <div>
+                            <h4 class="font-bold text-white text-sm">Clarissa Wijaya</h4>
+                            <span class="text-xs text-slate-400">Penthouse Guest</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER & LOKASI -->
+    <footer id="tentang" class="bg-obsidian border-t border-slate-800 pt-16 pb-12 text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+                
+                <!-- Col 1: Brand Info -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full border border-gold-500/40 flex items-center justify-center bg-gold-500/10">
+                            <i class="fa-solid fa-crown text-gold-400 text-lg"></i>
+                        </div>
+                        <span class="font-serif text-xl font-bold tracking-wider gold-gradient-text">AURA HORIZON</span>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Aura Horizon Grand Hotel & Suites menghadirkan standar kenyamanan serta kemewahan tertinggi dengan layanan personalisasi terbaik.
+                    </p>
+                    <div class="flex gap-4 text-lg">
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-gold-500 hover:text-obsidian flex items-center justify-center transition"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-gold-500 hover:text-obsidian flex items-center justify-center transition"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-slate-800 hover:bg-gold-500 hover:text-obsidian flex items-center justify-center transition"><i class="fa-brands fa-tripadvisor"></i></a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div>
+                    <h4 class="font-serif text-white font-semibold text-base mb-4">Navigasi Cepat</h4>
+                    <ul class="space-y-2 text-xs">
+                        <li><a href="#beranda" class="hover:text-gold-400 transition">Beranda</a></li>
+                        <li><a href="#kamar" class="hover:text-gold-400 transition">Tipe Kamar & Price</a></li>
+                        <li><a href="#fasilitas" class="hover:text-gold-400 transition">Fasilitas Utama</a></li>
+                        <li><a href="#ulasan" class="hover:text-gold-400 transition">Testimoni Tamu</a></li>
+                        <li><a href="#booking" class="hover:text-gold-400 transition">Formulir Booking</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Contact Info -->
+                <div>
+                    <h4 class="font-serif text-white font-semibold text-base mb-4">Kontak & Reservasi</h4>
+                    <ul class="space-y-3 text-xs">
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-location-dot text-gold-400 mt-1"></i>
+                            <span>Jl. Boulevard Grand Horizon No. 88, Central District, Indonesia</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-phone text-gold-400"></i>
+                            <span>+62 21 5558 9900</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fa-brands fa-whatsapp text-gold-400"></i>
+                            <span>+62 812 3456 7890</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i class="fa-solid fa-envelope text-gold-400"></i>
+                            <span>reservation@aurahorizon.com</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Location Map Placeholder -->
+                <div>
+                    <h4 class="font-serif text-white font-semibold text-base mb-4">Lokasi Kami</h4>
+                    <div class="rounded-xl overflow-hidden border border-slate-700 bg-slate-800 h-32 flex flex-col items-center justify-center text-center p-4">
+                        <i class="fa-solid fa-map-location-dot text-3xl text-gold-400 mb-2"></i>
+                        <span class="text-xs text-slate-300 font-medium">Aura Horizon District</span>
+                        <span class="text-[10px] text-slate-500">Akses mudah dari Bandara International (20 menit)</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="border-t border-slate-800 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+                <p>&copy; 2026 Aura Horizon Grand Hotel & Suites. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-slate-400">Kebijakan Privasi</a>
+                    <a href="#" class="hover:text-slate-400">Syarat & Ketentuan</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT & INTERACTION LOGIC -->
+    <script>
+        // Default Date Setup for Booking Inputs
+        window.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const formatDate = (date) => date.toISOString().split('T')[0];
+
+            // Set default dates for Booking Calculator Form
+            const bookCheckIn = document.getElementById('bookCheckIn');
+            const bookCheckOut = document.getElementById('bookCheckOut');
+
+            if (bookCheckIn) bookCheckIn.value = formatDate(today);
+            if (bookCheckOut) bookCheckOut.value = formatDate(tomorrow);
+
+            // Calculate initial total
+            calculateTotal();
+
+            initHotelMap();
+        });
+
+        // Initialize Dynamic Interactive Map
+        function initHotelMap() {
+            const mapContainer = document.getElementById('hotelMap');
+            if (!mapContainer || typeof L === 'undefined') return;
+
+            // Coordinates for Hotel Location (Central Jakarta area)
+            const hotelLat = -6.193125;
+            const hotelLng = 106.821810;
+
+            const map = L.map('hotelMap', {
+                center: [hotelLat, hotelLng],
+                zoom: 15,
+                zoomControl: true,
+                scrollWheelZoom: false
+            });
+
+            // CartoDB Dark Matter Tile Layer
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Custom Gold Hotel Pin
+            const goldMarkerIcon = L.divIcon({
+                className: 'custom-gold-pin',
+                html: `<div style="background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); width: 38px; height: 38px; border-radius: 50%; border: 2px solid #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
+                        <i class="fa-solid fa-crown" style="color: #0f172a; font-size: 16px;"></i>
+                       </div>`,
+                iconSize: [38, 38],
+                iconAnchor: [19, 19]
+            });
+
+            const marker = L.marker([hotelLat, hotelLng], { icon: goldMarkerIcon }).addTo(map);
+
+            marker.bindPopup(`
+                <div style="text-align: center; font-family: sans-serif; padding: 4px;">
+                    <strong style="color: #fbbf24; font-size: 14px; font-weight: bold; display: block; margin-bottom: 2px;">AURA HORIZON</strong>
+                    <span style="color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Grand Hotel & Suites</span>
+                    <p style="color: #e2e8f0; font-size: 11px; margin-top: 6px; margin-bottom: 0;">Jl. Boulevard Grand Horizon No. 88</p>
+                </div>
+            `).openPopup();
+        }
+
+        // Mobile Menu Toggle Logic
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const menuIcon = document.getElementById('menuIcon');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            if (mobileMenu.classList.contains('hidden')) {
+                menuIcon.className = "fa-solid fa-bars text-2xl";
+            } else {
+                menuIcon.className = "fa-solid fa-xmark text-2xl";
+            }
+        });
+
+        // Close mobile menu when clicking menu item
+        document.querySelectorAll('.mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuIcon.className = "fa-solid fa-bars text-2xl";
+            });
+        });
+
+        // Filter Rooms Logic
+        function filterRooms(category) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-gold-500', 'text-obsidian', 'active');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            event.target.classList.remove('bg-slate-800', 'text-slate-300');
+            event.target.classList.add('bg-gold-500', 'text-obsidian', 'active');
+
+            const roomCards = document.querySelectorAll('.room-card');
+            roomCards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Select Room Button Handler
+        function selectRoomForBooking(roomName, price) {
+            const roomSelect = document.getElementById('bookRoomType');
+            for (let i = 0; i < roomSelect.options.length; i++) {
+                if (roomSelect.options[i].value === roomName) {
+                    roomSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            calculateTotal();
+            document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Calculate Total Booking Price
+        function calculateTotal() {
+            const roomSelect = document.getElementById('bookRoomType');
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            const roomPricePerNight = parseInt(selectedOption.getAttribute('data-price')) || 0;
+
+            const checkInVal = document.getElementById('bookCheckIn').value;
+            const checkOutVal = document.getElementById('bookCheckOut').value;
+
+            let nights = 1;
+
+            if (checkInVal && checkOutVal) {
+                const date1 = new Date(checkInVal);
+                const date2 = new Date(checkOutVal);
+                const diffTime = date2 - date1;
+                const calculatedNights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                nights = calculatedNights > 0 ? calculatedNights : 1;
+            }
+
+            // Calculate Add-ons
+            let addonsTotal = 0;
+            const shuttle = document.getElementById('addonShuttle');
+            const breakfast = document.getElementById('addonBreakfast');
+            const spa = document.getElementById('addonSpa');
+
+            if (shuttle && shuttle.checked) addonsTotal += parseInt(shuttle.value);
+            if (breakfast && breakfast.checked) addonsTotal += (parseInt(breakfast.value) * nights);
+            if (spa && spa.checked) addonsTotal += parseInt(spa.value);
+
+            const total = (roomPricePerNight * nights) + addonsTotal;
+
+            // Update UI
+            document.getElementById('summaryNights').innerText = nights;
+            document.getElementById('summaryTotalPrice').innerText = 'Rp ' + total.toLocaleString('id-ID');
+
+            return {
+                nights,
+                total,
+                roomPricePerNight,
+                selectedRoom: selectedOption.value
+            };
+        }
+
+        // Form Validation helper
+        function validateBookingInput() {
+            const name = document.getElementById('custName').value.trim();
+            const email = document.getElementById('custEmail').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+
+            if (!name || !email || !phone) {
+                alert('Mohon lengkapi Nama, Email, dan Nomor WhatsApp Anda.');
+                return false;
+            }
+            return true;
+        }
+
+        // Send Reservation details to WhatsApp
+        function sendToWhatsApp() {
+            if (!validateBookingInput()) return;
+
+            const name = document.getElementById('custName').value;
+            const phone = document.getElementById('custPhone').value;
+            const checkIn = document.getElementById('bookCheckIn').value;
+            const checkOut = document.getElementById('bookCheckOut').value;
+            const guests = document.getElementById('bookGuests').value;
+
+            const calcData = calculateTotal();
+
+            let addonsList = [];
+            if (document.getElementById('addonShuttle').checked) addonsList.push("Jemputan Bandara");
+            if (document.getElementById('addonBreakfast').checked) addonsList.push("Sarapan Premium");
+            if (document.getElementById('addonSpa').checked) addonsList.push("Paket Spa Couple");
+
+            const addonsFormatted = addonsList.length > 0 ? addonsList.join(", ") : "Tidak Ada";
+
+            const message = `*RESERVASI KAMAR - AURA HORIZON GRAND HOTEL*\n\n` +
+                            `Halo Admin Aura Horizon, saya ingin melakukan reservasi kamar:\n\n` +
+                            `👤 *Nama*: ${name}\n` +
+                            `📞 *No. WA*: ${phone}\n` +
+                            `🏨 *Tipe Kamar*: ${calcData.selectedRoom}\n` +
+                            `📅 *Check-In*: ${checkIn}\n` +
+                            `📅 *Check-Out*: ${checkOut} (${calcData.nights} Malam)\n` +
+                            `👥 *Jumlah Tamu*: ${guests}\n` +
+                            `✨ *Layanan Tambahan*: ${addonsFormatted}\n` +
+                            `💰 *Total Estimasi*: Rp ${calcData.total.toLocaleString('id-ID')}\n\n` +
+                            `Mohon informasi ketersediaan dan langkah pembayaran selanjutnya. Terima kasih.`;
+
+            const hotelWhatsAppNumber = "6281234567890"; // Nomor WhatsApp Hotel
+            const encodedUrl = `https://wa.me/${hotelWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+            window.open(encodedUrl, '_blank');
+        }
+
+        // Send Reservation details via Gmail / Email
+        function sendToGmail() {
+            if (!validateBookingInput()) return;
+
+            const name = document.getElementById('custName').value;
+            const email = document.getElementById('custEmail').value;
+            const phone = document.getElementById('custPhone').value;
+            const checkIn = document.getElementById('bookCheckIn').value;
+            const checkOut = document.getElementById('bookCheckOut').value;
+            const guests = document.getElementById('bookGuests').value;
+
+            const calcData = calculateTotal();
+
+            let addonsList = [];
+            if (document.getElementById('addonShuttle').checked) addonsList.push("Jemputan Bandara");
+            if (document.getElementById('addonBreakfast').checked) addonsList.push("Sarapan Premium");
+            if (document.getElementById('addonSpa').checked) addonsList.push("Paket Spa Couple");
+
+            const addonsFormatted = addonsList.length > 0 ? addonsList.join(", ") : "Tidak Ada";
+
+            const subject = `[RESERVASI ONLINE] - ${name} - ${calcData.selectedRoom}`;
+            const body = `Pemesanan Kamar - Aura Horizon Grand Hotel & Suites\n\n` +
+                         `Detail Tamu:\n` +
+                         `- Nama Lengkap: ${name}\n` +
+                         `- Email Tamu: ${email}\n` +
+                         `- No WhatsApp: ${phone}\n\n` +
+                         `Detail Pemesanan:\n` +
+                         `- Tipe Kamar: ${calcData.selectedRoom}\n` +
+                         `- Tanggal Check-In: ${checkIn}\n` +
+                         `- Tanggal Check-Out: ${checkOut} (${calcData.nights} Malam)\n` +
+                         `- Jumlah Tamu: ${guests}\n` +
+                         `- Layanan Tambahan: ${addonsFormatted}\n` +
+                         `- Estimasi Total Biaya: Rp ${calcData.total.toLocaleString('id-ID')}\n\n` +
+                         `Mohon diproses untuk ketersediaan kamar. Terima kasih.`;
+
+            const mailtoUrl = `mailto:reservation@aurahorizon.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+    </script>
+</body>
+</html>
